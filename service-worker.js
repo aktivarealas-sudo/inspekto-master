@@ -1,5 +1,5 @@
 /* Inspekto Lite service worker - offline cache for static assets */
-const CACHE = "inspekto-lite-v2";
+const CACHE = "inspekto-lite-v3"; // bump denne når du endrer
 
 const ASSETS = [
   "./",
@@ -13,7 +13,7 @@ const ASSETS = [
   "./assets/ui.js",
   "./manifest.json",
 
-  // Icons (ligger i rot hos deg, ikke i /assets)
+  // icons (ROOT – matcher manifest.json)
   "./icon-192.png",
   "./icon-512.png",
   "./icon-192-maskable.png",
