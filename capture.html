@@ -105,7 +105,7 @@
 
       const media = (await all("media")).filter(m=>m.inspectionId===ins.id).sort((a,b)=>b.createdAt-a.createdAt);
       const pending = media.filter(m=>!m.uploaded).length;
-      qs("#queueInfo").innerHTML = `Inspeksjon: <span class="kbd">\${ins.id}</span> • Bilder/lyd: <strong>\${media.length}</strong> • Ikke synket: <strong>\${pending}</strong>\`;
+     qs("#queueInfo").innerHTML = `Inspeksjon: <span class="kbd">${ins.id}</span> • Bilder/lyd: <strong>${media.length}</strong> • Ikke synket: <strong>${pending}</strong>`;
 
       const recent = media.slice(0, 12);
       const list = qs("#recent");
