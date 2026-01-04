@@ -114,20 +114,8 @@
         const el = document.createElement("div");
         el.className="item";
         const thumb = (m.tag==="audio") ? "" : await mediaThumbURL(m.id);
-        el.innerHTML = \`
-          \${thumb ? `<img class="thumb" src="\${thumb}" alt="thumb" />` : `<div class="thumb" style="display:grid;place-items:center"><span class="muted">LYD</span></div>`}
-          <div class="meta">
-            <div class="row space">
-              <span class="tag \${m.tag==="equipment"?"eq":m.tag==="sign"?"sign":m.tag==="issue"?"issue":"ov"}">\${m.tag.toUpperCase()}</span>
-              <span class="muted">\${new Date(m.createdAt).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}</span>
-            </div>
-            <div class="muted">\${m.note || ""}</div>
-            \${m.uploadError ? `<div class="muted" style="color:var(--danger)">Synk-feil: \${m.uploadError}</div>` : ""}
-          </div>
-          <div class="row">
-            <button class="btn danger" data-del="\${m.id}">Slett</button>
-          </div>
-        \`;
+        
+        `;
         list.appendChild(el);
       }
 
