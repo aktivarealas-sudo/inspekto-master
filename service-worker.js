@@ -1,9 +1,5 @@
 /* Inspekto Lite service worker - offline cache for static assets */
 const CACHE = "inspekto-lite-v2";
-"./assets/icon-192.png",
-"./assets/icon-512.png",
-"./assets/icon-192-maskable.png",
-"./assets/icon-512-maskable.png",
 
 const ASSETS = [
   "./",
@@ -15,8 +11,15 @@ const ASSETS = [
   "./assets/styles.css",
   "./assets/app.js",
   "./assets/ui.js",
-  "./manifest.json"
+  "./manifest.json",
+
+  // Icons (ligger i rot hos deg, ikke i /assets)
+  "./icon-192.png",
+  "./icon-512.png",
+  "./icon-192-maskable.png",
+  "./icon-512-maskable.png",
 ];
+
 
 self.addEventListener("install", (event)=>{
   event.waitUntil(
