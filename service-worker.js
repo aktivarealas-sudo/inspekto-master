@@ -1,5 +1,10 @@
 /* Inspekto Lite service worker - offline cache for static assets */
-const CACHE = "inspekto-lite-v1";
+const CACHE = "inspekto-lite-v2";
+"./assets/icon-192.png",
+"./assets/icon-512.png",
+"./assets/icon-192-maskable.png",
+"./assets/icon-512-maskable.png",
+
 const ASSETS = [
   "./",
   "./index.html",
