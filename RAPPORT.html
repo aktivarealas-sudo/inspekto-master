@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <title>Utstyrsside – Mal</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #222;
+      background: #f3f4f6;
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .report-page {
+      background: #fff;
+      width: 900px;
+      padding: 24px 28px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      border-radius: 10px;
+      box-sizing: border-box;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 0.6rem;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 1.8rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    /* Topputstyr-seksjon */
+
+    .top-section {
+      display: grid;
+      grid-template-columns: 1.1fr 1.3fr;
+      gap: 16px;
+      margin-bottom: 1.2rem;
+      align-items: flex-start;
+    }
+
+    .equipment-image {
+      background: #e5e7eb;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1 / 1; /* kvadratisk */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .equipment-image span {
+      padding: 0.5rem 0.8rem;
+      background: rgba(0,0,0,0.05);
+      border-radius: 999px;
+    }
+
+    .top-right {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 8px;
+    }
+
+    .sign-and-info {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .sign-image {
+      width: 90px;
+      aspect-ratio: 1 / 1;
+      background: #d1fae5;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #047857;
+      font-weight: 600;
+    }
+
+    .info-list {
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .info-label {
+      font-weight: 600;
+    }
+
+    .info-row {
+      margin-bottom: 2px;
+    }
+
+    /* Avviksliste */
+
+    .avvik-list {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .avvik-block {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px 12px 12px;
+      background: #f9fafb;
+    }
+
+    .avvik-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.4rem;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .avvik-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .fare-badge {
+      font-size: 0.85rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .fare-A {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .fare-B {
+      background: #ffedd5;
+      color: #c2410c;
+    }
+
+    .fare-C {
+      background: #fef9c3;
+      color: #854d0e;
+    }
+
+    .fare-icon {
+      font-size: 1rem;
+    }
+
+    .avvik-body {
+      display: grid;
+      grid-template-columns: 1.6fr 1.1fr;
+      gap: 10px;
+    }
+
+    .avvik-desc {
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .avvik-desc p {
+      margin: 0 0 4px;
+    }
+
+    .avvik-desc .henvisning {
+      font-size: 0.82rem;
+      color: #4b5563;
+      margin-top: 4px;
+    }
+
+    .avvik-images {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+
+    .avvik-image {
+      background: #e5e7eb;
+      border-radius: 6px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+
+    .section-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-top: 1.2rem;
+      margin-bottom: 0.4rem;
+    }
+
+    /* Litt kompakt for å få mye på én side */
+    .report-page {
+      font-size: 0.9rem;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="report-page">
+
+    <!-- UTSTYRSNAVN -->
+    <h1>Utstyr: [UTSTYRSNAVN]</h1>
+
+    <!-- TOPPSEKSJON: UTSTYRSBILDE + SKILT + INFO -->
+    <div class="top-section">
+      <div class="equipment-image">
+        <span>UTSTYRSBILDE</span>
+      </div>
+      <div class="top-right">
+        <div class="sign-and-info">
+          <div class="sign-image">
+            SKILT
+          </div>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-label">Lekeapparat:</span> <span>Eksempelapparat</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Type:</span> <span>Vippe / Huske / etc.</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Produsent:</span> <span>Eksempelprodusent AS</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Årsmodell:</span> <span>2020</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Serienr / skiltinfo:</span> <span>12345-ABC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AVVIKSLISTE -->
+    <h2>Avvik på dette utstyret</h2>
+
+    <div class="avvik-list">
+
+      <!-- AVVIK 1 – B (eksempel med konkret tekst) -->
+      <div class="avvik-block">
+        <div class="avvik-header">
+          <div class="avvik-title">Avvik nr. X.1 – Innledende avviksbeskrivelse</div>
+          <div class="fare-badge fare-B">
+            <span class="fare-icon">🟠</span>
+            <span>Fareklasse B – varig skade</span>
+          </div>
+        </div>
+        <div class="avvik-body">
+          <div class="avvik-desc">
+            <p>
+              Det er registrert en åpning i en bevegelig kobling som tillater innføring
+              av en liten fingersonde, uten at en større fingersonde kan passere. Dette
+              kan føre til at en finger blir klemt fast ved bruk.
+            </p>
+            <p>
+              Åpningen vurderes å kunne medføre klemfare under normal bruk av utstyret.
+            </p>
+            <div class="henvisning">
+              Henvisning: NS-EN 1176-1, pkt. 4.2.13 – Klemfare i det frie bevegelsesrommet.
+            </div>
+          </div>
+          <div class="avvik-images">
+            <div class="avvik-image">Bilde 1</div>
+            <div class="avvik-image">Bilde 2</div>
+            <div class="avvik-image">Bilde 3</div>
+            <div class="avvik-image">Bilde 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AVVIK 2 – C -->
+      <div class="avvik-block">
+        <div class="avvik-header">
+          <div class="avvik-title">Avvik nr. X.2 – Innledende avviksbeskrivelse</div>
+          <div class="fare-badge fare-C">
+            <span class="fare-icon">🟡</span>
+            <span>Fareklasse C – mindre skade</span>
+          </div>
+        </div>
+        <div class="avvik-body">
+          <div class="avvik-desc">
+            <p>
+              Slitasje i overflatebelegg gjør at mindre skarpe kanter er eksponert.
+              Dette kan gi risiko for mindre kutt eller skrubbsår ved kontakt.
+            </p>
+            <div class="henvisning">
+              Henvisning: NS-EN 1176-1, pkt. 4.2.4 – Overflater og kanter.
+            </div>
+          </div>
+          <div class="avvik-images">
+            <div class="avvik-image">Bilde 1</div>
+            <div class="avvik-image">Bilde 2</div>
+            <div class="avvik-image">Bilde 3</div>
+            <div class="avvik-image">Bilde 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AVVIK 3 – B -->
+      <div class="avvik-block">
+        <div class="avvik-header">
+          <div class="avvik-title">Avvik nr. X.3 – Innledende avviksbeskrivelse</div>
+          <div class="fare-badge fare-B">
+            <span class="fare-icon">🟠</span>
+            <span>Fareklasse B – varig skade</span>
+          </div>
+        </div>
+        <div class="avvik-body">
+          <div class="avvik-desc">
+            <p>
+              Løs skrue i bærende konstruksjon reduserer stabiliteten i utstyret og kan
+              føre til uforutsigbar bevegelse under bruk.
+            </p>
+            <div class="henvisning">
+              Henvisning: NS-EN 1176-1, pkt. 4.2.2 – Styrke og stabilitet.
+            </div>
+          </div>
+          <div class="avvik-images">
+            <div class="avvik-image">Bilde 1</div>
+            <div class="avvik-image">Bilde 2</div>
+            <div class="avvik-image">Bilde 3</div>
+            <div class="avvik-image">Bilde 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AVVIK 4 – C -->
+      <div class="avvik-block">
+        <div class="avvik-header">
+          <div class="avvik-title">Avvik nr. X.4 – Innledende avviksbeskrivelse</div>
+          <div class="fare-badge fare-C">
+            <span class="fare-icon">🟡</span>
+            <span>Fareklasse C – mindre skade</span>
+          </div>
+        </div>
+        <div class="avvik-body">
+          <div class="avvik-desc">
+            <p>
+              Lakkskader og begynnende korrosjon på overflater kan gi ru og ujevne
+              kontaktflater som øker risiko for mindre hudskader.
+            </p>
+            <div class="henvisning">
+              Henvisning: NS-EN 1176-7, pkt. 8.2.6 – Vedlikehold av overflater.
+            </div>
+          </div>
+          <div class="avvik-images">
+            <div class="avvik-image">Bilde 1</div>
+            <div class="avvik-image">Bilde 2</div>
+            <div class="avvik-image">Bilde 3</div>
+            <div class="avvik-image">Bilde 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AVVIK 5 – A -->
+      <div class="avvik-block">
+        <div class="avvik-header">
+          <div class="avvik-title">Avvik nr. X.5 – Innledende avviksbeskrivelse</div>
+          <div class="fare-badge fare-A">
+            <span class="fare-icon">🔴</span>
+            <span>Fareklasse A – livsfare</span>
+          </div>
+        </div>
+        <div class="avvik-body">
+          <div class="avvik-desc">
+            <p>
+              Klatretau har mangelfull innfesting og kan løsne under bruk. Dette kan
+              føre til fall fra høyde og alvorlig skade.
+            </p>
+            <div class="henvisning">
+              Henvisning: NS-EN 1176-2, pkt. 4.1 – Fallsikring og innfesting.
+            </div>
+          </div>
+          <div class="avvik-images">
+            <div class="avvik-image">Bilde 1</div>
+            <div class="avvik-image">Bilde 2</div>
+            <div class="avvik-image">Bilde 3</div>
+            <div class="avvik-image">Bilde 4</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /avvik-list -->
+
+  </div><!-- /report-page -->
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./assets/styles.css" />
+  <title>Inspekto Lite</title>
+</head>
+<body>
+  <div class="topbar">
+    <div class="container row space">
+      <div class="row" style="gap:10px">
+        <div class="pill"><strong>Inspekto Lite</strong> <span class="muted">offline-first</span></div>
+        <span id="activeInfo" class="muted"></span>
+      </div>
+      <div class="row">
+        <a class="btn" data-nav="home" href="./index.html">Hjem</a>
+        <a class="btn" data-nav="capture" href="./capture.html">Capture</a>
+        <a class="btn" data-nav="review" href="./review.html">Review</a>
+        <a class="btn" data-nav="report" href="./report.html">Rapport</a>
+        <a class="btn" data-nav="settings" href="./settings.html">Innstillinger</a>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div id="secureWarn" class="notice" style="display:none">
+      <strong>OBS:</strong> For PWA-install, lydopptak og service worker må appen kjøres på <span class="kbd">https</span> eller <span class="kbd">localhost</span>.
+      (Lokalt: bruk en enkel webserver. Se “Innstillinger” for steg.)
+    </div>
+
+  <div class="grid grid2">
+    <div class="card">
+      <h1>Innstillinger</h1>
+      <p class="muted">Her kan du tilpasse avvikstyper, fareklasser og (valgfritt) sette en upload-endpoint.</p>
+
+      <label>Upload endpoint (valgfritt)</label>
+      <input id="endpoint" placeholder="https://din-server.no (valgfritt)" />
+      <div class="muted" style="margin-top:6px">Hvis tomt: alt blir bare lagret lokalt.</div>
+
+      <hr />
+
+      <label>Avvikstyper (JSON)</label>
+      <textarea id="issueTypes"></textarea>
+
+      <label>Fareklasser (JSON)</label>
+      <textarea id="severity"></textarea>
+
+      <div class="row">
+        <button id="btnSave" class="btn primary">Lagre</button>
+        <button id="btnReset" class="btn">Tilbakestill standard</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Hvordan få dette på telefon</h2>
+      <ol class="muted" style="line-height:1.55">
+        <li>Dette må ligge på en webserver (helst <span class="kbd">https</span>), ellers fungerer ikke PWA/lyd alltid.</li>
+        <li>Enkelt: <strong>Netlify Drop</strong> (dra-og-slipp mappen) eller <strong>GitHub Pages</strong> / <strong>Cloudflare Pages</strong>.</li>
+        <li>Når den er på nett: åpne siden i Chrome (Android) → meny → <strong>Legg til på startskjerm</strong>.</li>
+      </ol>
+
+      <hr />
+      <h2>Kjør lokalt på PC</h2>
+      <div class="notice">
+        Åpning av HTML direkte fra disk kan gi trøbbel pga service worker. Bruk en enkel server:
+        <div style="margin-top:8px">
+          <div class="muted"><span class="kbd">Python</span> (hvis installert):</div>
+          <div class="kbd">python -m http.server 8080</div>
+          <div class="muted" style="margin-top:8px"><span class="kbd">Node</span> (valgfritt):</div>
+          <div class="kbd">npx serve</div>
+        </div>
+      </div>
+
+      <hr />
+      <button id="btnWipe" class="btn danger">Slett alt lokalt (reset)</button>
+      <div class="muted" style="margin-top:8px">OBS: Dette sletter alle lokasjoner, bilder, avvik og rapportdata.</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {qs, toast, ensureDefaults, getSetting, setSetting, openDB} from "./assets/app.js";
+
+    async function load(){
+      await ensureDefaults();
+      qs("#endpoint").value = await getSetting("uploadEndpoint", "");
+      qs("#issueTypes").value = JSON.stringify(await getSetting("issueTypes", []), null, 2);
+      qs("#severity").value = JSON.stringify(await getSetting("severity", []), null, 2);
+    }
+
+    qs("#btnSave").addEventListener("click", async ()=>{
+      try{
+        await setSetting("uploadEndpoint", qs("#endpoint").value.trim());
+        await setSetting("issueTypes", JSON.parse(qs("#issueTypes").value));
+        await setSetting("severity", JSON.parse(qs("#severity").value));
+        toast("Lagret.");
+      }catch(e){
+        toast("JSON-feil. Sjekk format.");
+      }
+    });
+
+    qs("#btnReset").addEventListener("click", async ()=>{
+      // blow away these keys then reload defaults
+      await setSetting("issueTypes", null);
+      await setSetting("severity", null);
+      await setSetting("uploadEndpoint", "");
+      // Remove explicitly so defaults repopulate
+      const db = await openDB();
+      const t = db.transaction(["settings"], "readwrite");
+      t.objectStore("settings").delete("issueTypes");
+      t.objectStore("settings").delete("severity");
+      t.objectStore("settings").delete("uploadEndpoint");
+      await new Promise(r=>t.oncomplete=r);
+      toast("Tilbakestilt.");
+      load();
+    });
+
+    qs("#btnWipe").addEventListener("click", async ()=>{
+      if(!confirm("Slette ALT lokalt?")) return;
+      indexedDB.deleteDatabase("inspekto_lite_db");
+      toast("Slettet. Last siden på nytt.");
+    });
+
+    load();
+  </script>
+
+    <hr />
+    <div class="footerlinks muted">
+      Lagret lokalt på telefon/PC (IndexedDB). Dette er en MVP du kan videreutvikle.
+    </div>
+  </div>
+
+  <script type="module">
+    import {initShell} from "./assets/ui.js";
+    const page = document.body.dataset.page || "";
+    initShell(page);
+  </script>
+</body>
+</html>

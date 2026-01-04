@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./assets/styles.css" />
+  <title>Inspekto Lite</title>
+</head>
+<body>
+  <div class="topbar">
+    <div class="container row space">
+      <div class="row" style="gap:10px">
+        <div class="pill"><strong>Inspekto Lite</strong> <span class="muted">offline-first</span></div>
+        <span id="activeInfo" class="muted"></span>
+      </div>
+      <div class="row">
+        <a class="btn" data-nav="home" href="./index.html">Hjem</a>
+        <a class="btn" data-nav="capture" href="./capture.html">Capture</a>
+        <a class="btn" data-nav="review" href="./review.html">Review</a>
+        <a class="btn" data-nav="report" href="./report.html">Rapport</a>
+        <a class="btn" data-nav="settings" href="./settings.html">Innstillinger</a>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div id="secureWarn" class="notice" style="display:none">
+      <strong>OBS:</strong> For PWA-install, lydopptak og service worker må appen kjøres på <span class="kbd">https</span> eller <span class="kbd">localhost</span>.
+      (Lokalt: bruk en enkel webserver. Se “Innstillinger” for steg.)
+    </div>
+
+    <div class="grid grid2">
+      <div class="card">
+        <h1>Start / oversikt</h1>
+        <p class="muted">Dette er en enkel PWA som gir deg “Capture → Queue → Review → Rapport” uten å vente på opplasting i felt.</p>
+        <div class="row">
+          <button id="btnNewLoc" class="btn primary">Ny lokasjon</button>
+          <button id="btnStart" class="btn ok">Start inspeksjon</button>
+          <button id="btnResume" class="btn">Åpne aktiv</button>
+        </div>
+        <hr />
+        <div class="grid">
+          <div>
+            <label>Velg lokasjon</label>
+            <select id="locSelect"></select>
+          </div>
+          <div class="grid grid2">
+            <div>
+              <label>Type</label>
+              <select id="kind">
+                <option value="annual">Årlig</option>
+                <option value="followup">Oppfølging</option>
+                <option value="first">Førstegang</option>
+              </select>
+            </div>
+            <div>
+              <label>Notat</label>
+              <input id="insNote" placeholder="f.eks. 'Sjekk råte nøye'" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Lokasjoner</h2>
+        <div id="locList" class="list"></div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="card">
+      <h2>Slik bruker du den (praktisk)</h2>
+      <ol class="muted" style="line-height:1.5">
+        <li>Opprett lokasjon → <strong>Start inspeksjon</strong></li>
+        <li>Ute: bruk <strong>Capture</strong> (store knapper, lagres lokalt, ingen venting)</li>
+        <li>I bilen: bruk <strong>Review</strong> (lag utstyr, legg skilt, opprett avvik med 1–4 bilder)</li>
+        <li>Til slutt: <strong>Rapport</strong> → generer HTML-rapport → skriv ut til PDF</li>
+      </ol>
+      <div class="notice">
+        <strong>Viktig:</strong> Dette er laget for å være stabilt og enkelt – ingen “agent som gjør alt”.
+        AI er lagt opp som <em>konservative forslag</em> og kan bygges på senere.
+      </div>
+    </div>
+
+  <script type="module">
+    import {qs, toast, all, put, getSetting, setSetting, createLocation, createInspection, activeInspection, get} from "./assets/app.js";
+
+    async function renderLocations(){
+      const locs = (await all("locations")).sort((a,b)=>b.updatedAt-a.updatedAt);
+      const sel = qs("#locSelect");
+      sel.innerHTML = locs.map(l=>`<option value="${l.id}">${l.name}</option>`).join("") || `<option value="">Ingen lokasjoner</option>`;
+
+      const list = qs("#locList");
+      list.innerHTML = "";
+      for(const l of locs){
+        const el = document.createElement("div");
+        el.className="item";
+        el.innerHTML = \`
+          <div class="meta">
+            <div class="row space">
+              <strong>\${l.name}</strong>
+              <span class="muted">\${new Date(l.updatedAt).toLocaleDateString()}</span>
+            </div>
+            <div class="muted">\${l.address || ""}</div>
+            <div class="muted">\${l.notes || ""}</div>
+          </div>
+          <div class="row">
+            <button class="btn" data-edit="\${l.id}">Rediger</button>
+          </div>\`;
+        list.appendChild(el);
+      }
+      list.addEventListener("click", async (e)=>{
+        const id = e.target?.dataset?.edit;
+        if(!id) return;
+        const l = await get("locations", id);
+        const name = prompt("Navn", l.name) ?? l.name;
+        const address = prompt("Adresse", l.address || "") ?? (l.address||"");
+        const notes = prompt("Notat", l.notes || "") ?? (l.notes||"");
+        l.name=name; l.address=address; l.notes=notes; l.updatedAt=Date.now();
+        await put("locations", l);
+        toast("Oppdatert.");
+        renderLocations();
+      }, {once:true});
+    }
+
+    qs("#btnNewLoc").addEventListener("click", async ()=>{
+      const name = prompt("Lokasjonsnavn (skole/barnehage/borettslag)")?.trim();
+      if(!name) return;
+      const address = prompt("Adresse (valgfritt)")?.trim() || "";
+      await createLocation({name, address, notes:""});
+      toast("Lokasjon opprettet.");
+      renderLocations();
+    });
+
+    qs("#btnStart").addEventListener("click", async ()=>{
+      const locationId = qs("#locSelect").value;
+      if(!locationId){ toast("Opprett/velg lokasjon først."); return; }
+      const kind = qs("#kind").value;
+      const ins = await createInspection({locationId, kind});
+      const note = qs("#insNote").value.trim();
+      if(note) await setSetting("inspectionNote:"+ins.id, note);
+      toast("Startet. Gå til Capture.");
+      location.href="./capture.html";
+    });
+
+    qs("#btnResume").addEventListener("click", async ()=>{
+      const ins = await activeInspection();
+      if(!ins){ toast("Ingen aktiv inspeksjon."); return; }
+      location.href = (ins.status==="review") ? "./review.html" : "./capture.html";
+    });
+
+    renderLocations();
+  </script>
+
+    <hr />
+    <div class="footerlinks muted">
+      Lagret lokalt på telefon/PC (IndexedDB). Dette er en MVP du kan videreutvikle.
+    </div>
+  </div>
+
+  <script type="module">
+    import {initShell} from "./assets/ui.js";
+    const page = document.body.dataset.page || "";
+    initShell(page);
+  </script>
+</body>
+</html>

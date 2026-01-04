@@ -1,0 +1,163 @@
+<!-- ============================= -->
+<!--     SIDE 2 – UTSTYRSLISTE     -->
+<!-- ============================= -->
+
+<h1 style="margin-top:40px;">Utstyrsliste – Årlig kontroll 2025</h1>
+
+<!-- ============================= -->
+<!--   UTSTYR MED AVVIK (BØR VISES ØVERST) -->
+<!-- ============================= -->
+
+<h2 style="margin-top:30px; color:#b91c1c;">Utstyr med avvik</h2>
+
+<div class="equipment-list">
+
+  <!-- CARD 1 – Eksempel -->
+  <div class="equipment-card" data-risk="b">
+    <div class="risk-strip risk-b"></div>
+
+    <img class="thumb" src="thumb1.jpg">
+
+    <div class="info">
+      <h3>Huskestativ dobbel</h3>
+      <p class="meta">Produsent: Søve • År: 2023</p>
+
+      <ul class="deviations">
+        <li><span class="tag tag-b">B</span> 1.1 – Klemfare ved koblingspunkt</li>
+        <li><span class="tag tag-c">C</span> 1.2 – Slitasje i opphengstau</li>
+      </ul>
+
+      <div class="page-ref">Side 4</div>
+    </div>
+  </div>
+
+  <!-- CARD 2 -->
+  <div class="equipment-card" data-risk="b">
+    <div class="risk-strip risk-b"></div>
+
+    <img class="thumb" src="thumb2.jpg">
+
+    <div class="info">
+      <h3>Plattform med sklie og nett</h3>
+      <p class="meta">Produsent: HAGS • År: 2018</p>
+
+      <ul class="deviations">
+        <li><span class="tag tag-b">B</span> 2.1 – Produktmerking mangler</li>
+      </ul>
+
+      <div class="page-ref">Side 5</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================= -->
+<!--     UTSTYR UDEN AVVIK        -->
+<!-- ============================= -->
+
+<h2 style="margin-top:40px; color:#15803d;">Utstyr uten avvik</h2>
+
+<div class="equipment-list">
+
+  <div class="equipment-card" data-risk="ok">
+    <div class="risk-strip risk-ok"></div>
+
+    <img class="thumb" src="thumb3.jpg">
+
+    <div class="info">
+      <h3>Snurreplate</h3>
+      <p class="ok">🟢 OK – Ingen avvik registrert</p>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+<!-- ============================= -->
+<!-- CSS FOR MODERNE CARD DESIGN  -->
+<!-- ============================= -->
+<style>
+
+.equipment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.equipment-card {
+  position: relative;
+  display: flex;
+  padding: 15px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+
+.risk-strip {
+  width: 6px;
+  border-radius: 6px 0 0 6px;
+  margin-right: 12px;
+}
+
+.risk-a { background:#dc2626; }
+.risk-b { background:#ea580c; }
+.risk-c { background:#ca8a04; }
+.risk-o { background:#16a34a; }
+.risk-ok { background:#9ca3af; }
+
+.equipment-card img.thumb {
+  width: 75px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 15px;
+}
+
+.info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.meta {
+  margin: 3px 0 8px 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.deviations {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.75rem;
+  color: white;
+  margin-right: 6px;
+}
+
+.tag-a { background:#dc2626; }
+.tag-b { background:#ea580c; }
+.tag-c { background:#ca8a04; }
+.tag-o { background:#16a34a; }
+
+.ok {
+  color:#15803d;
+  font-weight:bold;
+}
+
+.page-ref {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color:#4b5563;
+}
+
+</style>

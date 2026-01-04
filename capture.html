@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./assets/styles.css" />
+  <title>Inspekto Lite</title>
+</head>
+<body>
+  <div class="topbar">
+    <div class="container row space">
+      <div class="row" style="gap:10px">
+        <div class="pill"><strong>Inspekto Lite</strong> <span class="muted">offline-first</span></div>
+        <span id="activeInfo" class="muted"></span>
+      </div>
+      <div class="row">
+        <a class="btn" data-nav="home" href="./index.html">Hjem</a>
+        <a class="btn" data-nav="capture" href="./capture.html">Capture</a>
+        <a class="btn" data-nav="review" href="./review.html">Review</a>
+        <a class="btn" data-nav="report" href="./report.html">Rapport</a>
+        <a class="btn" data-nav="settings" href="./settings.html">Innstillinger</a>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div id="secureWarn" class="notice" style="display:none">
+      <strong>OBS:</strong> For PWA-install, lydopptak og service worker må appen kjøres på <span class="kbd">https</span> eller <span class="kbd">localhost</span>.
+      (Lokalt: bruk en enkel webserver. Se “Innstillinger” for steg.)
+    </div>
+
+  <div class="grid grid2">
+    <div class="card">
+      <h1>Capture (ute på lekeplassen)</h1>
+      <p class="muted">Her gjør du bare én ting: ta bilder raskt. Ingen plassering – alt lagres lokalt, og kan sorteres i Review.</p>
+
+      <div class="notice">
+        Tips: bruk <span class="kbd">volumknapp</span> for å knipse raskt. (Telefonen åpner kamera direkte via “Capture”.)
+      </div>
+
+      <hr />
+
+      <div class="grid">
+        <div>
+          <label>Tag (hva er dette?)</label>
+          <div class="row">
+            <button class="btn primary" data-tag="equipment">Utstyr</button>
+            <button class="btn warn" data-tag="sign">Skilt</button>
+            <button class="btn danger" data-tag="issue">Avvik</button>
+            <button class="btn ok" data-tag="overview">Oversikt</button>
+          </div>
+          <div class="muted" style="margin-top:8px">Velg tag → knips. Systemet legger det i kø og du sorterer senere.</div>
+        </div>
+
+        <div>
+          <label>Hurtignotat (valgfritt)</label>
+          <input id="quickNote" placeholder="f.eks. '9–23 på kjetting' / 'samme flere punkt'" />
+        </div>
+
+        <div class="row space">
+          <button id="btnEnd" class="btn">Avslutt capture → Review</button>
+          <button id="btnTryUpload" class="btn ghost">Synk nå</button>
+        </div>
+
+        <div id="queueInfo" class="notice muted"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Nyeste i kø</h2>
+      <div id="recent" class="list"></div>
+      <hr />
+      <h2>Valgfritt: lydnotat</h2>
+      <p class="muted">Lyd fungerer best på https/localhost. Hvis ikke, bruk tekstnotat.</p>
+      <div class="row">
+        <button id="btnRec" class="btn">Start lyd</button>
+        <button id="btnStop" class="btn" disabled>Stopp</button>
+      </div>
+      <div id="recStatus" class="muted" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <input id="file" type="file" accept="image/*" capture="environment" style="display:none" />
+
+  <script type="module">
+    import {qs, qsa, toast, activeInspection, endInspection, addMedia, all, get, put, mediaThumbURL, tryUploadPending, mustServeSecure} from "./assets/app.js";
+
+    let currentTag = "equipment";
+    const file = qs("#file");
+
+    async function ensureActive(){
+      const ins = await activeInspection();
+      if(!ins){
+        toast("Ingen aktiv inspeksjon. Start fra Hjem.");
+        location.href="./index.html";
+        return null;
+      }
+      return ins;
+    }
+
+    async function render(){
+      const ins = await ensureActive();
+      if(!ins) return;
+
+      const media = (await all("media")).filter(m=>m.inspectionId===ins.id).sort((a,b)=>b.createdAt-a.createdAt);
+      const pending = media.filter(m=>!m.uploaded).length;
+      qs("#queueInfo").innerHTML = \`Inspeksjon: <span class="kbd">\${ins.id}</span> • Bilder/lyd: <strong>\${media.length}</strong> • Ikke synket: <strong>\${pending}</strong>\`;
+
+      const recent = media.slice(0, 12);
+      const list = qs("#recent");
+      list.innerHTML = "";
+      for(const m of recent){
+        const el = document.createElement("div");
+        el.className="item";
+        const thumb = (m.tag==="audio") ? "" : await mediaThumbURL(m.id);
+        el.innerHTML = \`
+          \${thumb ? `<img class="thumb" src="\${thumb}" alt="thumb" />` : `<div class="thumb" style="display:grid;place-items:center"><span class="muted">LYD</span></div>`}
+          <div class="meta">
+            <div class="row space">
+              <span class="tag \${m.tag==="equipment"?"eq":m.tag==="sign"?"sign":m.tag==="issue"?"issue":"ov"}">\${m.tag.toUpperCase()}</span>
+              <span class="muted">\${new Date(m.createdAt).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}</span>
+            </div>
+            <div class="muted">\${m.note || ""}</div>
+            \${m.uploadError ? `<div class="muted" style="color:var(--danger)">Synk-feil: \${m.uploadError}</div>` : ""}
+          </div>
+          <div class="row">
+            <button class="btn danger" data-del="\${m.id}">Slett</button>
+          </div>
+        \`;
+        list.appendChild(el);
+      }
+
+      list.onclick = async (e)=>{
+        const id = e.target?.dataset?.del;
+        if(!id) return;
+        if(!confirm("Slette dette mediet?")) return;
+        await (await import("./assets/app.js")).del("media", id);
+        toast("Slettet.");
+        render();
+      };
+    }
+
+    qsa("[data-tag]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        currentTag = btn.dataset.tag;
+        // open camera picker
+        file.click();
+      });
+    });
+
+    file.addEventListener("change", async ()=>{
+      const ins = await ensureActive();
+      if(!ins) return;
+      const f = file.files?.[0];
+      file.value = "";
+      if(!f) return;
+
+      const note = qs("#quickNote").value.trim();
+      const blob = f; // File is a Blob
+      await addMedia({inspectionId: ins.id, parentType:"inspection", parentId: ins.id, tag: currentTag, blob, mime: f.type || "image/jpeg", note});
+      qs("#quickNote").value = "";
+      toast("Lagret lokalt.");
+      render();
+    });
+
+    qs("#btnEnd").addEventListener("click", async ()=>{
+      const ins = await ensureActive();
+      if(!ins) return;
+      await endInspection(ins.id);
+      toast("Capture avsluttet. Gå til Review.");
+      location.href="./review.html";
+    });
+
+    qs("#btnTryUpload").addEventListener("click", async ()=>{
+      const r = await tryUploadPending();
+      if(!r.ok){ toast("Ingen upload-endpoint satt (se Innstillinger)."); return; }
+      toast(`Synket: ${r.uploaded} filer`);
+      render();
+    });
+
+    // --- Voice notes (optional) ---
+    let recorder=null, chunks=[];
+    const recStatus = qs("#recStatus");
+    qs("#btnRec").addEventListener("click", async ()=>{
+      if(mustServeSecure()){
+        toast("Lyd krever https/localhost.");
+        return;
+      }
+      const ins = await ensureActive();
+      if(!ins) return;
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        recorder = new MediaRecorder(stream);
+        chunks = [];
+        recorder.ondataavailable = e=> chunks.push(e.data);
+        recorder.onstop = async ()=>{
+          const blob = new Blob(chunks, {type: recorder.mimeType || "audio/webm"});
+          await addMedia({inspectionId: ins.id, parentType:"inspection", parentId: ins.id, tag:"audio", blob, mime: blob.type, note: qs("#quickNote").value.trim()});
+          toast("Lyd lagret.");
+          qs("#quickNote").value="";
+          stream.getTracks().forEach(t=>t.stop());
+          recorder=null;
+          qs("#btnRec").disabled=false;
+          qs("#btnStop").disabled=true;
+          recStatus.textContent="";
+          render();
+        };
+        recorder.start();
+        qs("#btnRec").disabled=true;
+        qs("#btnStop").disabled=false;
+        recStatus.textContent="Tar opp…";
+      }catch(e){
+        toast("Kunne ikke starte lyd.");
+        console.warn(e);
+      }
+    });
+
+    qs("#btnStop").addEventListener("click", ()=>{
+      if(recorder && recorder.state!=="inactive"){
+        recorder.stop();
+      }
+    });
+
+    render();
+  </script>
+
+    <hr />
+    <div class="footerlinks muted">
+      Lagret lokalt på telefon/PC (IndexedDB). Dette er en MVP du kan videreutvikle.
+    </div>
+  </div>
+
+  <script type="module">
+    import {initShell} from "./assets/ui.js";
+    const page = document.body.dataset.page || "";
+    initShell(page);
+  </script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Inspeksjonsrapport – Utstyrsside</title>
+
+<style>
+/* PAGE */
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  margin: 0;
+}
+.page {
+  width: 900px;
+  background: #ffffff;
+  padding: 18px 22px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* HEADER */
+.header {
+  display: grid;
+  grid-template-columns: 110px 1fr 110px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.logo {
+  width: 110px;
+  height: 45px;
+  background: #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: bold;
+  color: #374151;
+}
+.page-info {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+
+/* TOP SECTION */
+.top-section {
+  display: grid;
+  grid-template-columns: 1.15fr auto 1fr;
+  gap: 12px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+.image-placeholder {
+  width: 100%;
+  aspect-ratio: 1.4 / 1;
+  max-height: 210px;
+  background: #e5e7eb;
+  border: 2px dashed #9ca3af;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* SKILT */
+.skilt-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+.skilt-box {
+  width: 95px;
+  aspect-ratio: 1 / 1;
+  background: #eef2ff;
+  border: 2px dashed #9ca3af;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* INFOGRID */
+.info-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 10px;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+.info-label { font-weight: 600; color: #374151; }
+.info-value { color: #111827; }
+
+/* AVVIK */
+.avvik-block {
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+.avvik-header {
+  padding: 4px 8px;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.avvik-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.fare-badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* FAREKLASSEFARGER */
+.fare-A { background: #fee2e2; color: #b91c1c; }
+.fare-B { background: #ffedd5; color: #a63a00; }
+.fare-C { background: #fff8b3; color: #7c5e00; }
+.fare-O { background: #dcfce7; color: #166534; }
+
+/* BODY */
+.avvik-body {
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 6px;
+}
+.avvik-desc {
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+/* BILDER */
+.avvik-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  align-content: start;
+  align-items: start;
+}
+.avvik-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #e5e7eb;
+  border: 1px dashed #9ca3af;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #6b7280;
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
+/* KOMMENTAR */
+.comment-box {
+  margin-top: 6px;
+  padding: 6px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">LOGO</div>
+  <div><b>Lokasjon:</b> Båstad skole<br><b>Dato:</b> 10.12.2025</div>
+  <div class="page-info">Side 1 av 1</div>
+</div>
+
+<!-- UTSTYR -->
+<h2>UTSTYR 1 – Huskestativ</h2>
+
+<div class="top-section">
+
+  <div class="image-placeholder">UTSTYRSBILDE</div>
+
+  <div class="skilt-column">
+    <div class="skilt-box">SKILT 1</div>
+    <div class="skilt-box">SKILT 2</div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-label">Location:</div><div class="info-value">Båstad skole</div>
+    <div class="info-label">Type:</div><div class="info-value">Huskestativ enkel</div>
+    <div class="info-label">Brand:</div><div class="info-value">Søve</div>
+    <div class="info-label">Model:</div><div class="info-value">630</div>
+    <div class="info-label">Series:</div><div class="info-value">Standard serie</div>
+    <div class="info-label">Year:</div><div class="info-value">2023</div>
+    <div class="info-label">Surface:</div><div class="info-value">Sand</div>
+    <div class="info-label">Registered:</div><div class="info-value">26.06.2024</div>
+  </div>
+
+</div>
+
+<h3>Avvik på dette utstyret</h3>
+
+<!-- ===================== AVVIK 1 ===================== -->
+<div class="avvik-block">
+  <div class="avvik-header fare-B">
+    <div class="avvik-title">Avvik X.1 – (12mm) Fastklemming av fingre</div>
+    <div class="fare-badge">🟠 B</div>
+  </div>
+  <div class="avvik-body">
+    <div class="avvik-desc">
+      <b>Avvikstekst:</b> Variable mellomrom i koblingsdeler endrer seg mer enn 5 % og er under 12 mm.
+      <br><br><b>Henvisning:</b> EN 1176-6, pkt 4.4 Tillegg C
+      <div class="comment-box"><b>Kommentar:</b> [tekst]</div>
+    </div>
+    <div class="avvik-images">
+      <div class="avvik-image">1</div><div class="avvik-image">2</div>
+      <div class="avvik-image">3</div><div class="avvik-image">4</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== AVVIK 2 ===================== -->
+<div class="avvik-block">
+  <div class="avvik-header fare-C">
+    <div class="avvik-title">Avvik X.2 – Løs bolt</div>
+    <div class="fare-badge">🟡 C</div>
+  </div>
+  <div class="avvik-body">
+    <div class="avvik-desc">
+      En bolt ved toppstag har tydelig slark.
+      <br><br><b>Henvisning:</b> EN 1176-1
+      <div class="comment-box"><b>Kommentar:</b> Bør etterstrammes.</div>
+    </div>
+    <div class="avvik-images">
+      <div class="avvik-image">1</div><div class="avvik-image">2</div>
+      <div class="avvik-image">3</div><div class="avvik-image">4</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== AVVIK 3 ===================== -->
+<div class="avvik-block">
+  <div class="avvik-header fare-O">
+    <div class="avvik-title">Avvik X.3 – Observasjon</div>
+    <div class="fare-badge">🟢 O</div>
+  </div>
+  <div class="avvik-body">
+    <div class="avvik-desc">
+      Mindre kosmetisk skade. Ingen påvirkning på funksjon.
+      <br><br><b>Henvisning:</b> –
+      <div class="comment-box"><b>Kommentar:</b> Følges opp årlig.</div>
+    </div>
+    <div class="avvik-images">
+      <div class="avvik-image">1</div><div class="avvik-image">2</div>
+      <div class="avvik-image">3</div><div class="avvik-image">4</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== AVVIK 4 ===================== -->
+<div class="avvik-block">
+  <div class="avvik-header fare-B">
+    <div class="avvik-title">Avvik X.4 – Slitasje i oppheng</div>
+    <div class="fare-badge">🟠 B</div>
+  </div>
+  <div class="avvik-body">
+    <div class="avvik-desc">
+      Opphengskjetting viser tydelig slitasje.
+      <br><br><b>Henvisning:</b> EN 1176-2
+      <div class="comment-box"><b>Kommentar:</b> Byttes snarlig.</div>
+    </div>
+    <div class="avvik-images">
+      <div class="avvik-image">1</div><div class="avvik-image">2</div>
+      <div class="avvik-image">3</div><div class="avvik-image">4</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== AVVIK 5 ===================== -->
+<div class="avvik-block">
+  <div class="avvik-header fare-C">
+    <div class="avvik-title">Avvik X.5 – Sprekk i stolpe</div>
+    <div class="fare-badge">🟡 C</div>
+  </div>
+  <div class="avvik-body">
+    <div class="avvik-desc">
+      Sprekk observert i trestolpe, ikke strukturell – men bør overvåkes.
+      <br><br><b>Henvisning:</b> EN 1176-1
+      <div class="comment-box"><b>Kommentar:</b> Vurder utskiftning ved neste service.</div>
+    </div>
+    <div class="avvik-images">
+      <div class="avvik-image">1</div><div class="avvik-image">2</div>
+      <div class="avvik-image">3</div><div class="avvik-image">4</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">LOGO</div>
+    <div><b>Lokasjon:</b> Båstad skole<br><b>Dato:</b> 10.12.2025</div>
+    <div class="page-info">Side 2 av 2</div>
+  </div>
+
+  <h2>Utstyr uten helseskadelige avvik</h2>
+
+
+  <!-- =============== UTSTYR 1 – ingen avvik =============== -->
+  <div class="ok-utstyr-block">
+
+    <div class="ok-label">🟢 OK – Ingen helseskadelige avvik</div>
+
+    <div class="top-section">
+
+      <div class="image-placeholder">UTSTYRSBILDE</div>
+
+      <div class="skilt-column">
+        <div class="skilt-box">SKILT 1</div>
+        <div class="skilt-box">SKILT 2</div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-label">Type:</div><div class="info-value">Rutsjebane</div>
+        <div class="info-label">Brand:</div><div class="info-value">Kompan</div>
+        <div class="info-label">Model:</div><div class="info-value">M123</div>
+        <div class="info-label">Year:</div><div class="info-value">2021</div>
+        <div class="info-label">Surface:</div><div class="info-value">Sand</div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+  <!-- =============== UTSTYR 2 – ingen avvik =============== -->
+  <div class="ok-utstyr-block">
+
+    <div class="ok-label">🟢 OK – Ingen helseskadelige avvik</div>
+
+    <div class="top-section">
+
+      <div class="image-placeholder">UTSTYRSBILDE</div>
+
+      <div class="skilt-column">
+        <div class="skilt-box">SKILT 1</div>
+        <div class="skilt-box">SKILT 2</div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-label">Type:</div><div class="info-value">Klatrestativ</div>
+        <div class="info-label">Brand:</div><div class="info-value">Søve</div>
+        <div class="info-label">Model:</div><div class="info-value">9001</div>
+        <div class="info-label">Year:</div><div class="info-value">2019</div>
+        <div class="info-label">Surface:</div><div class="info-value">Gummi</div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+  <!-- =============== UTSTYR 3 – ingen avvik =============== -->
+  <div class="ok-utstyr-block">
+
+    <div class="ok-label">🟢 OK – Ingen helseskadelige avvik</div>
+
+    <div class="top-section">
+
+      <div class="image-placeholder">UTSTYRSBILDE</div>
+
+      <div class="skilt-column">
+        <div class="skilt-box">SKILT 1</div>
+        <div class="skilt-box">SKILT 2</div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-label">Type:</div><div class="info-value">Vippe</div>
+        <div class="info-label">Brand:</div><div class="info-value">HAGS</div>
+        <div class="info-label">Model:</div><div class="info-value">T210</div>
+        <div class="info-label">Year:</div><div class="info-value">2020</div>
+        <div class="info-label">Surface:</div><div class="info-value">Bark</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+

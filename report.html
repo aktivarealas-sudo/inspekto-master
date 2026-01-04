@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./assets/styles.css" />
+  <title>Inspekto Lite</title>
+</head>
+<body>
+  <div class="topbar">
+    <div class="container row space">
+      <div class="row" style="gap:10px">
+        <div class="pill"><strong>Inspekto Lite</strong> <span class="muted">offline-first</span></div>
+        <span id="activeInfo" class="muted"></span>
+      </div>
+      <div class="row">
+        <a class="btn" data-nav="home" href="./index.html">Hjem</a>
+        <a class="btn" data-nav="capture" href="./capture.html">Capture</a>
+        <a class="btn" data-nav="review" href="./review.html">Review</a>
+        <a class="btn" data-nav="report" href="./report.html">Rapport</a>
+        <a class="btn" data-nav="settings" href="./settings.html">Innstillinger</a>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div id="secureWarn" class="notice" style="display:none">
+      <strong>OBS:</strong> For PWA-install, lydopptak og service worker må appen kjøres på <span class="kbd">https</span> eller <span class="kbd">localhost</span>.
+      (Lokalt: bruk en enkel webserver. Se “Innstillinger” for steg.)
+    </div>
+
+  <div class="grid">
+    <div class="card">
+      <h1>Rapport</h1>
+      <p class="muted">Denne siden lager en HTML-rapport du kan skrive ut til PDF (Chrome: Del → Skriv ut → Lagre som PDF).</p>
+
+      <div class="row">
+        <button id="btnBuild" class="btn primary">Bygg rapport</button>
+        <button id="btnPrint" class="btn" disabled>Skriv ut / Lag PDF</button>
+        <button id="btnExport" class="btn ghost">Eksporter data (JSON)</button>
+      </div>
+
+      <hr />
+      <div id="meta" class="notice muted"></div>
+    </div>
+
+    <div class="card">
+      <h2>Forhåndsvisning</h2>
+      <div id="preview" class="notice muted">Trykk “Bygg rapport”.</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {qs, toast, activeInspection, listInspectionBundle, mediaThumbURL, getSetting, blobToDataURL} from "./assets/app.js";
+
+    let htmlToPrint = "";
+
+    function esc(s){ return (s||"").replace(/[&<>"]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+
+    async function build(){
+      const ins = await activeInspection();
+      if(!ins){ toast("Ingen aktiv inspeksjon."); location.href="./index.html"; return; }
+      const bundle = await listInspectionBundle(ins.id);
+      const note = await getSetting("inspectionNote:"+ins.id, "");
+      const types = await getSetting("issueTypes", []);
+      const sev = await getSetting("severity", []);
+      const tMap = new Map(types.map(x=>[x.id,x.label]));
+      const sMap = new Map(sev.map(x=>[x.id,x.label]));
+
+      qs("#meta").innerHTML = `
+        Lokasjon: <strong>${esc(bundle.loc?.name||"")}</strong><br/>
+        Adresse: ${esc(bundle.loc?.address||"")}<br/>
+        Type: ${esc(ins.kind)} • Dato: ${new Date(ins.createdAt).toLocaleDateString()}<br/>
+        Notat: ${esc(note)}
+      `;
+
+      // Build printable HTML
+      let body = `
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Rapport</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin:24px; color:#111}
+  h1{margin:0 0 8px 0}
+  .muted{color:#555}
+  .box{border:1px solid #ddd; border-radius:12px; padding:14px; margin:12px 0}
+  .row{display:flex; gap:12px; flex-wrap:wrap}
+  .img{width:240px; height:auto; border:1px solid #ddd; border-radius:12px}
+  .tag{display:inline-block; border:1px solid #ccc; border-radius:999px; padding:2px 10px; font-size:12px; margin-left:8px}
+  .hr{border-top:1px solid #eee; margin:16px 0}
+</style>
+</head>
+<body>
+  <h1>Kontrollrapport</h1>
+  <div class="muted">${esc(bundle.loc?.name||"")} • ${new Date(ins.createdAt).toLocaleDateString()}</div>
+  <div class="box">
+    <strong>Lokasjon</strong><br/>
+    ${esc(bundle.loc?.name||"")}<br/>
+    ${esc(bundle.loc?.address||"")}<br/>
+    <span class="muted">Type:</span> ${esc(ins.kind)}<br/>
+    ${note ? `<span class="muted">Notat:</span> ${esc(note)}<br/>` : ""}
+  </div>
+  <div class="hr"></div>
+  <h2>Utstyr og avvik</h2>
+`;
+
+      // Equipment section
+      for(const eq of bundle.equipment){
+        const cover = eq.coverMediaId ? await mediaThumbURL(eq.coverMediaId) : "";
+        const sign = eq.signMediaId ? await mediaThumbURL(eq.signMediaId) : "";
+        const eqIssues = bundle.issues.filter(i=>i.equipmentId===eq.id);
+
+        body += `<div class="box">
+          <h3 style="margin:0 0 8px 0">${esc(eq.title)} ${eq.equipmentNo?`<span class="muted">(#${esc(eq.equipmentNo)})</span>`:""}</h3>
+          ${eq.vendor?`<div class="muted">Leverandør: ${esc(eq.vendor)}</div>`:""}
+          <div class="row" style="margin-top:10px">
+            ${cover ? `<img class="img" src="${cover}" alt="utstyr"/>` : ""}
+            ${sign ? `<img class="img" src="${sign}" alt="skilt"/>` : ""}
+          </div>
+          <div class="hr"></div>
+          <strong>Avvik</strong> <span class="muted">(${eqIssues.length})</span>
+        `;
+
+        if(eqIssues.length===0){
+          body += `<div class="muted">Ingen avvik registrert på dette utstyret.</div>`;
+        }else{
+          for(const iss of eqIssues.sort((a,b)=>a.createdAt-b.createdAt)){
+            body += `<div class="box" style="border-style:dashed">
+              <div><strong>${esc(tMap.get(iss.issueTypeId)||iss.issueTypeId)}</strong>
+                <span class="tag">${esc(sMap.get(iss.severityId)||iss.severityId)}</span>
+              </div>
+              ${iss.comment ? `<div class="muted" style="margin-top:6px">${esc(iss.comment)}</div>` : ""}
+              <div class="row" style="margin-top:10px">
+            `;
+            for(const mid of (iss.mediaIds||[])){
+              const url = await mediaThumbURL(mid);
+              if(url) body += `<img class="img" src="${url}" alt="avvik"/>`;
+            }
+            body += `</div></div>`;
+          }
+        }
+
+        body += `</div>`;
+      }
+
+      body += `</body></html>`;
+
+      htmlToPrint = body;
+
+      // Preview inside app
+      qs("#preview").innerHTML = `
+        <div class="muted">Rapport klar. Trykk “Skriv ut / Lag PDF”.</div>
+        <div class="muted">Utstyr: <strong>${bundle.equipment.length}</strong> • Avvik: <strong>${bundle.issues.length}</strong></div>
+      `;
+      qs("#btnPrint").disabled = false;
+      toast("Rapport bygget.");
+    }
+
+    function printIt(){
+      if(!htmlToPrint) return;
+      const w = window.open("", "_blank");
+      w.document.open();
+      w.document.write(htmlToPrint);
+      w.document.close();
+      w.focus();
+      // Let user choose print->PDF
+      setTimeout(()=> w.print(), 400);
+    }
+
+    async function exportJSON(){
+      const ins = await activeInspection();
+      if(!ins){ toast("Ingen aktiv inspeksjon."); return; }
+      const bundle = await listInspectionBundle(ins.id);
+
+      // Replace blobs with placeholders to keep file small
+      const media = bundle.media.map(m=>({
+        ...m,
+        blob: undefined,
+        hasBlob: !!m.blob,
+        size: m.blob?.size || 0
+      }));
+
+      const exportObj = {...bundle, media};
+      const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `inspekto-lite-${ins.id}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("Eksportert.");
+    }
+
+    qs("#btnBuild").addEventListener("click", build);
+    qs("#btnPrint").addEventListener("click", printIt);
+    qs("#btnExport").addEventListener("click", exportJSON);
+  </script>
+
+    <hr />
+    <div class="footerlinks muted">
+      Lagret lokalt på telefon/PC (IndexedDB). Dette er en MVP du kan videreutvikle.
+    </div>
+  </div>
+
+  <script type="module">
+    import {initShell} from "./assets/ui.js";
+    const page = document.body.dataset.page || "";
+    initShell(page);
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Inspeksjonsrapport – Utstyrsside</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    margin: 0;
+  }
+
+  .page {
+    width: 900px;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+
+  /* HEADER */
+  .header {
+    display: grid;
+    grid-template-columns: 120px 1fr 150px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .logo {
+    width: 120px;
+    height: 60px;
+    background: #d1d5db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: bold;
+    color: #374151;
+  }
+
+  .header-info {
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .page-info {
+    text-align: right;
+    font-size: 0.9rem;
+    color: #4b5563;
+  }
+
+  /* UTSTYR */
+  .top-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 25px;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: #e5e7eb;
+    border: 2px dashed #9ca3af;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-weight: bold;
+  }
+
+  .skilt-box {
+    width: 160px;
+    height: 160px;
+    background: #eef2ff;
+    border: 2px dashed #9ca3af;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5563;
+    font-weight: bold;
+  }
+
+  .info-list {
+    font-size: 0.95rem;
+  }
+
+  .info-list b {
+    font-weight: 600;
+  }
+
+  /* AVVIKSBLOKKER */
+  .avvik-block {
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 18px;
+  }
+
+  .avvik-header {
+    padding: 10px 12px;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .avvik-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .badge {
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  /* Fareklassefarger */
+  .A { background: #fee2e2; color: #b91c1c; }
+  .B { background: #ffedd5; color: #c2410c; }
+  .C { background: #fef9c3; color: #854d0e; }
+  .O { background: #dcfce7; color: #166534; }
+
+  .avvik-body {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 12px;
+  }
+
+  .avvik-desc {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  /* BILDEPLACEHOLDERS */
+  .image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .img-placeholder {
+    background: #e5e7eb;
+    border: 2px dashed #9ca3af;
+    border-radius: 6px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+</style>
+
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">LOGO</div>
+
+    <div class="header-info">
+      <b>Lokasjon:</b> [Navn på lekeplass]<br>
+      <b>Dato:</b> [dd.mm.yyyy]
+    </div>
+
+    <div class="page-info">
+      Side <b>1</b> av <b>1</b>
+    </div>
+  </div>
+
+  <!-- UTSTYR -->
+  <h1>UTSTYR 1 – [Utstyrsnavn]</h1>
+
+  <div class="top-section">
+
+    <div class="image-placeholder">
+      UTSTYRSBILDE
+    </div>
+
+    <div>
+      <div class="skilt-box">
+        SKILTBILDE
+      </div>
+
+      <div class="info-list">
+        <div><b>Lekeapparat:</b> [tekst]</div>
+        <div><b>Type:</b> [tekst]</div>
+        <div><b>Produsent:</b> [tekst]</div>
+        <div><b>Produktnummer:</b> [tekst]</div>
+        <div><b>Produksjonsdato:</b> [tekst]</div>
+        <div><b>Standard:</b> EN1176</div>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Avvik på dette utstyret</h2>
+
+  <!-- AVVIK 1 – B -->
+  <div class="avvik-block">
+    <div class="avvik-header B">
+      <div class="avvik-title">Avvik nr. 1.1 – [Beskrivelse]</div>
+      <div class="badge">🟠 Fareklasse B – varig skade</div>
+    </div>
+
+    <div class="avvik-body">
+
+      <div class="avvik-desc">
+        [Beskrivelse av avviket]<br><br>
+        <b>Henvisning:</b> [NS-EN 1176-X]
+      </div>
+
+      <div class="image-grid">
+        <div class="img-placeholder">Bilde 1</div>
+        <div class="img-placeholder">Bilde 2</div>
+        <div class="img-placeholder">Bilde 3</div>
+        <div class="img-placeholder">Bilde 4</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AVVIK 2 – O -->
+  <div class="avvik-block">
+    <div class="avvik-header O">
+      <div class="avvik-title">Avvik nr. 1.2 – [Observasjon]</div>
+      <div class="badge">🟢 Observasjon</div>
+    </div>
+
+    <div class="avvik-body">
+
+      <div class="avvik-desc">
+        [Beskrivelse av observasjon]<br><br>
+        <b>Henvisning:</b> [NS-EN 1176-X]
+      </div>
+
+      <div class="image-grid">
+        <div class="img-placeholder">Bilde 1</div>
+        <div class="img-placeholder">Bilde 2</div>
+        <div class="img-placeholder">Bilde 3</div>
+        <div class="img-placeholder">Bilde 4</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

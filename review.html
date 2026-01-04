@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./assets/styles.css" />
+  <title>Inspekto Lite</title>
+</head>
+<body>
+  <div class="topbar">
+    <div class="container row space">
+      <div class="row" style="gap:10px">
+        <div class="pill"><strong>Inspekto Lite</strong> <span class="muted">offline-first</span></div>
+        <span id="activeInfo" class="muted"></span>
+      </div>
+      <div class="row">
+        <a class="btn" data-nav="home" href="./index.html">Hjem</a>
+        <a class="btn" data-nav="capture" href="./capture.html">Capture</a>
+        <a class="btn" data-nav="review" href="./review.html">Review</a>
+        <a class="btn" data-nav="report" href="./report.html">Rapport</a>
+        <a class="btn" data-nav="settings" href="./settings.html">Innstillinger</a>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div id="secureWarn" class="notice" style="display:none">
+      <strong>OBS:</strong> For PWA-install, lydopptak og service worker må appen kjøres på <span class="kbd">https</span> eller <span class="kbd">localhost</span>.
+      (Lokalt: bruk en enkel webserver. Se “Innstillinger” for steg.)
+    </div>
+
+  <div class="grid grid2">
+    <div class="card">
+      <h1>Review (i bilen / rolig sted)</h1>
+      <p class="muted">Her sorterer du “capture-køen” til: Utstyr → Skilt → Avvik (1–4 bilder) med konservative forslag.</p>
+
+      <div class="row">
+        <button id="btnNewEq" class="btn primary">+ Nytt utstyr</button>
+        <button id="btnFollowup" class="btn">Oppfølging-liste</button>
+        <button id="btnSync" class="btn ghost">Synk nå</button>
+      </div>
+
+      <hr />
+
+      <div class="grid">
+        <div>
+          <label>Velg utstyr</label>
+          <select id="eqSelect"></select>
+        </div>
+
+        <div class="grid grid2">
+          <div>
+            <label>Sett cover (utstyrsbilde)</label>
+            <select id="coverSelect"></select>
+            <button id="btnSetCover" class="btn">Bruk som cover</button>
+          </div>
+          <div>
+            <label>Sett skiltbilde</label>
+            <select id="signSelect"></select>
+            <button id="btnSetSign" class="btn warn">Bruk som skilt</button>
+          </div>
+        </div>
+
+        <div>
+          <label>Opprett avvik på valgt utstyr</label>
+          <div class="grid grid2">
+            <div>
+              <select id="issueType"></select>
+            </div>
+            <div>
+              <select id="severity"></select>
+            </div>
+          </div>
+          <label>Kommentar (valgfritt)</label>
+          <textarea id="comment" placeholder="Kort forklaring til kunden…"></textarea>
+
+          <label>Legg bilder til avvik (opptil 4)</label>
+          <select id="issueMediaPick" multiple size="6"></select>
+          <div class="muted" style="margin-top:6px">Tips: hold inne for å velge flere.</div>
+
+          <div class="row">
+            <button id="btnCreateIssue" class="btn danger">Opprett avvik</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Status / kø</h2>
+      <div id="summary" class="notice muted"></div>
+
+      <hr />
+      <h2>Utstyr</h2>
+      <div id="equipmentList" class="list"></div>
+
+      <hr />
+      <h2>Avvik på valgt utstyr</h2>
+      <div id="issueList" class="list"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      qs, qsa, toast, activeInspection, listInspectionBundle, createEquipment, createIssue, attachMediaToIssue,
+      setEquipmentCover, mediaThumbURL, getSetting, tryUploadPending, conservativeSuggestions, byIndex, get
+    } from "./assets/app.js";
+
+    let bundle=null;
+    let suggestions=null;
+
+    async function ensureActive(){
+      const ins = await activeInspection();
+      if(!ins){
+        toast("Ingen aktiv inspeksjon. Start fra Hjem.");
+        location.href="./index.html";
+        return null;
+      }
+      return ins;
+    }
+
+    function optionify(items, getLabel, empty="—"){
+      if(items.length===0) return `<option value="">${empty}</option>`;
+      return items.map(i=>`<option value="${i.id}">${getLabel(i)}</option>`).join("");
+    }
+
+    async function render(){
+      const ins = await ensureActive();
+      if(!ins) return;
+
+      bundle = await listInspectionBundle(ins.id);
+      suggestions = conservativeSuggestions(bundle.media);
+
+      // Summary
+      const pending = bundle.media.filter(m=>!m.uploaded).length;
+      qs("#summary").innerHTML = `
+        Inspeksjon: <span class="kbd">${ins.id}</span><br/>
+        Media: <strong>${bundle.media.length}</strong> (Utstyr ${suggestions.equipment.length}, Skilt ${suggestions.sign.length}, Avvik ${suggestions.issue.length}, Oversikt ${suggestions.overview.length})<br/>
+        Ikke synket: <strong>${pending}</strong><br/>
+        Utstyr: <strong>${bundle.equipment.length}</strong> • Avvik: <strong>${bundle.issues.length}</strong>
+      `;
+
+      // Populate equipment select
+      const eqSel = qs("#eqSelect");
+      eqSel.innerHTML = optionify(bundle.equipment, e=> `${e.title}${e.equipmentNo?` (#${e.equipmentNo})`:""}`, "Ingen utstyr (lag ett)");
+      const selectedEqId = eqSel.value || (bundle.equipment[0]?.id || "");
+      if(selectedEqId) eqSel.value = selectedEqId;
+
+      // Media picks
+      const coverSel = qs("#coverSelect");
+      coverSel.innerHTML = optionify(suggestions.equipment, m=> `${new Date(m.createdAt).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})} • ${m.note||"Utstyr"}`, "Ingen utstyrbilder");
+
+      const signSel = qs("#signSelect");
+      signSel.innerHTML = optionify(suggestions.sign, m=> `${new Date(m.createdAt).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})} • ${m.note||"Skilt"}`, "Ingen skiltbilder");
+
+      const issuePick = qs("#issueMediaPick");
+      issuePick.innerHTML = suggestions.issue.map(m=>`<option value="${m.id}">${new Date(m.createdAt).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})} • ${m.note||"Avvik"}</option>`).join("") || `<option value="">Ingen avviksbilder</option>`;
+
+      // Types/severity from settings
+      const issueTypes = await getSetting("issueTypes", []);
+      const severity = await getSetting("severity", []);
+      qs("#issueType").innerHTML = issueTypes.map(t=>`<option value="${t.id}">${t.label}</option>`).join("");
+      qs("#severity").innerHTML = severity.map(s=>`<option value="${s.id}">${s.label}</option>`).join("");
+
+      // Equipment cards
+      const eqList = qs("#equipmentList");
+      eqList.innerHTML = "";
+      for(const eq of bundle.equipment){
+        const cover = eq.coverMediaId ? await mediaThumbURL(eq.coverMediaId) : "";
+        const sign = eq.signMediaId ? await mediaThumbURL(eq.signMediaId) : "";
+        const el = document.createElement("div");
+        el.className="item";
+        el.innerHTML = `
+          ${cover ? `<img class="thumb" src="${cover}" alt="cover"/>` : `<div class="thumb" style="display:grid;place-items:center"><span class="muted">UTSTYR</span></div>`}
+          <div class="meta">
+            <div class="row space">
+              <strong>${eq.title}</strong>
+              <span class="muted">${eq.vendor || ""}</span>
+            </div>
+            <div class="muted">Nr: ${eq.equipmentNo || "—"} • Skilt: ${sign? "ja":"nei"}</div>
+            <div class="row">
+              <button class="btn" data-select="${eq.id}">Velg</button>
+              <button class="btn danger" data-edit="${eq.id}">Rediger</button>
+            </div>
+          </div>
+        `;
+        eqList.appendChild(el);
+      }
+
+      eqList.onclick = async (e)=>{
+        const id = e.target?.dataset?.select || "";
+        const editId = e.target?.dataset?.edit || "";
+        if(id){
+          qs("#eqSelect").value = id;
+          await renderIssues();
+        }else if(editId){
+          const eq = bundle.equipment.find(x=>x.id===editId);
+          const title = prompt("Utstyr (tittel)", eq.title) ?? eq.title;
+          const vendor = prompt("Leverandør (valgfritt)", eq.vendor || "") ?? (eq.vendor||"");
+          const equipmentNo = prompt("Utstyrnr (valgfritt)", eq.equipmentNo || "") ?? (eq.equipmentNo||"");
+          eq.title=title; eq.vendor=vendor; eq.equipmentNo=equipmentNo; eq.updatedAt=Date.now();
+          await (await import("./assets/app.js")).put("equipment", eq);
+          toast("Oppdatert.");
+          render();
+        }
+      };
+
+      await renderIssues();
+    }
+
+    async function renderIssues(){
+      const eqId = qs("#eqSelect").value;
+      const list = qs("#issueList");
+      list.innerHTML = "";
+      if(!eqId){ list.innerHTML = `<div class="notice muted">Velg utstyr først.</div>`; return; }
+
+      const issues = await byIndex("issues","by_equipment", eqId);
+      const types = await getSetting("issueTypes", []);
+      const sev = await getSetting("severity", []);
+      const tMap = new Map(types.map(x=>[x.id,x.label]));
+      const sMap = new Map(sev.map(x=>[x.id,x.label]));
+
+      if(issues.length===0){
+        list.innerHTML = `<div class="notice muted">Ingen avvik registrert på valgt utstyr.</div>`;
+        return;
+      }
+
+      for(const iss of issues.sort((a,b)=>b.createdAt-a.createdAt)){
+        const el = document.createElement("div");
+        el.className="item";
+        const firstMediaId = iss.mediaIds?.[0] || "";
+        const thumb = firstMediaId ? await mediaThumbURL(firstMediaId) : "";
+        el.innerHTML = `
+          ${thumb ? `<img class="thumb" src="${thumb}" alt="thumb"/>` : `<div class="thumb" style="display:grid;place-items:center"><span class="muted">AVVIK</span></div>`}
+          <div class="meta">
+            <div class="row space">
+              <strong>${tMap.get(iss.issueTypeId) || iss.issueTypeId}</strong>
+              <span class="tag issue">${sMap.get(iss.severityId) || iss.severityId}</span>
+            </div>
+            <div class="muted">${iss.comment || ""}</div>
+            <div class="muted">Bilder: ${iss.mediaIds?.length || 0}</div>
+          </div>
+        `;
+        list.appendChild(el);
+      }
+    }
+
+    qs("#btnNewEq").addEventListener("click", async ()=>{
+      const ins = await ensureActive(); if(!ins) return;
+      const title = prompt("Utstyr (f.eks. Huskestativ, Klatrestativ)")?.trim();
+      if(!title) return;
+      const eq = await createEquipment({inspectionId: ins.id, title});
+      toast("Utstyr opprettet.");
+      await render();
+      qs("#eqSelect").value = eq.id;
+      await renderIssues();
+    });
+
+    qs("#btnSetCover").addEventListener("click", async ()=>{
+      const eqId = qs("#eqSelect").value;
+      const mediaId = qs("#coverSelect").value;
+      if(!eqId || !mediaId){ toast("Velg utstyr og bilde."); return; }
+      await setEquipmentCover(eqId, mediaId, "cover");
+      toast("Cover satt.");
+      render();
+    });
+
+    qs("#btnSetSign").addEventListener("click", async ()=>{
+      const eqId = qs("#eqSelect").value;
+      const mediaId = qs("#signSelect").value;
+      if(!eqId || !mediaId){ toast("Velg utstyr og bilde."); return; }
+      await setEquipmentCover(eqId, mediaId, "sign");
+      toast("Skilt satt.");
+      render();
+    });
+
+    qs("#btnCreateIssue").addEventListener("click", async ()=>{
+      const eqId = qs("#eqSelect").value;
+      if(!eqId){ toast("Velg utstyr."); return; }
+      const issueTypeId = qs("#issueType").value;
+      const severityId = qs("#severity").value;
+      const comment = qs("#comment").value.trim();
+
+      const iss = await createIssue({equipmentId: eqId, issueTypeId, severityId, comment});
+      const selected = Array.from(qs("#issueMediaPick").selectedOptions).map(o=>o.value).filter(Boolean);
+      for(const mId of selected.slice(0,4)){
+        await attachMediaToIssue(iss.id, mId);
+      }
+      qs("#comment").value="";
+      toast("Avvik opprettet.");
+      render();
+    });
+
+    qs("#btnSync").addEventListener("click", async ()=>{
+      const r = await tryUploadPending();
+      if(!r.ok){ toast("Ingen upload-endpoint satt (se Innstillinger)."); return; }
+      toast(`Synket: ${r.uploaded} filer`);
+      render();
+    });
+
+    qs("#btnFollowup").addEventListener("click", async ()=>{
+      // Minimal: jump to report where follow-up view is shown (for now)
+      toast("Oppfølging-liste: se Rapport (foreløpig).");
+      location.href="./report.html";
+    });
+
+    qs("#eqSelect").addEventListener("change", renderIssues);
+
+    render();
+  </script>
+
+    <hr />
+    <div class="footerlinks muted">
+      Lagret lokalt på telefon/PC (IndexedDB). Dette er en MVP du kan videreutvikle.
+    </div>
+  </div>
+
+  <script type="module">
+    import {initShell} from "./assets/ui.js";
+    const page = document.body.dataset.page || "";
+    initShell(page);
+  </script>
+</body>
+</html>
