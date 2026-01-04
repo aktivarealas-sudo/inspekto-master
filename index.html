@@ -90,43 +90,51 @@
   <script type="module">
     import {qs, toast, all, put, getSetting, setSetting, createLocation, createInspection, activeInspection, get} from "./assets/app.js";
 
-    async function renderLocations(){
-      const locs = (await all("locations")).sort((a,b)=>b.updatedAt-a.updatedAt);
-      const sel = qs("#locSelect");
-      sel.innerHTML = locs.map(l=>`<option value="${l.id}">${l.name}</option>`).join("") || `<option value="">Ingen lokasjoner</option>`;
+ async function renderLocations(){
+  const locs = (await all("locations")).sort((a,b)=>b.updatedAt-a.updatedAt);
 
-      const list = qs("#locList");
-      list.innerHTML = "";
-      for(const l of locs){
-        const el = document.createElement("div");
-        el.className="item";
-        el.innerHTML = \`
-          <div class="meta">
-            <div class="row space">
-              <strong>\${l.name}</strong>
-              <span class="muted">\${new Date(l.updatedAt).toLocaleDateString()}</span>
-            </div>
-            <div class="muted">\${l.address || ""}</div>
-            <div class="muted">\${l.notes || ""}</div>
-          </div>
-          <div class="row">
-            <button class="btn" data-edit="\${l.id}">Rediger</button>
-          </div>\`;
-        list.appendChild(el);
-      }
-      list.addEventListener("click", async (e)=>{
-        const id = e.target?.dataset?.edit;
-        if(!id) return;
-        const l = await get("locations", id);
-        const name = prompt("Navn", l.name) ?? l.name;
-        const address = prompt("Adresse", l.address || "") ?? (l.address||"");
-        const notes = prompt("Notat", l.notes || "") ?? (l.notes||"");
-        l.name=name; l.address=address; l.notes=notes; l.updatedAt=Date.now();
-        await put("locations", l);
-        toast("Oppdatert.");
-        renderLocations();
-      }, {once:true});
-    }
+  const sel = qs("#locSelect");
+  sel.innerHTML = locs.map(l=>`<option value="${l.id}">${l.name}</option>`).join("")
+    || `<option value="">Ingen lokasjoner</option>`;
+
+  const list = qs("#locList");
+  list.innerHTML = "";
+
+  for(const l of locs){
+    const el = document.createElement("div");
+    el.className = "item";
+
+    el.innerHTML = `
+      <div class="meta">
+        <div class="row space">
+          <strong>${l.name}</strong>
+          <span class="muted">${new Date(l.updatedAt).toLocaleDateString()}</span>
+        </div>
+        <div class="muted">${l.address || ""}</div>
+        <div class="muted">${l.notes || ""}</div>
+      </div>
+      <div class="row">
+        <button class="btn" data-edit="${l.id}">Rediger</button>
+      </div>
+    `;
+
+    list.appendChild(el);
+  }
+
+  list.addEventListener("click", async (e)=>{
+    const id = e.target?.dataset?.edit;
+    if(!id) return;
+    const l = await get("locations", id);
+    const name = prompt("Navn", l.name) ?? l.name;
+    const address = prompt("Adresse", l.address || "") ?? (l.address||"");
+    const notes = prompt("Notat", l.notes || "") ?? (l.notes||"");
+    l.name = name; l.address = address; l.notes = notes; l.updatedAt = Date.now();
+    await put("locations", l);
+    toast("Oppdatert.");
+    renderLocations();
+  }, { once:true });
+}
+
 
     qs("#btnNewLoc").addEventListener("click", async ()=>{
       const name = prompt("Lokasjonsnavn (skole/barnehage/borettslag)")?.trim();
